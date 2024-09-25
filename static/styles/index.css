@@ -17,13 +17,100 @@ body {
 }
 
 #login-container{
-  width: 45vw;
+  width: 38vw;
   height: 46vh;
   background-color: white;
   border-radius: 30px;
-  padding: 2vh 2vw;
+  padding: 4vh 3vw 2vh 3vw;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  
+}
+
+.title-container{
+  display: flex;
+  flex-direction: row;
+  height: 10vh;
+  width: 100%;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.signa-logo{
+  position: absolute;
+  left: 0;
+  padding: 0;
+  width: 10vh;
+  justify-self: flex-start;
+}
+
+.login{
+  font-weight: medium;
+  font-size: 48px;
+}
+
+.inputs-container{
+  display: flex;
+  flex-direction: column;
+  padding: 2vh 0;
+  box-sizing: border-box;
+}
+
+.input-field{
+  background-color: #D9D9D9;
+  border-radius: 5px;
+  border-width: 0;
+  height: 4.5vh;
+  font-size: 18px;
+  box-sizing: border-box;
+  padding-left: .2vw;
+}
+
+.login-titles{
+  padding: 1vh 0;
+  font-size: 24px;
+  font-weight: medium;
+}
+
+#forgot-password{
+  color: #00A0DD;
+  font-size: 16px;
+  font-weight: medium;
+  text-decoration: none;
+  padding: 1vh 0;
+}
+
+.err-submit-btn-container{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 6vh;
+}
+
+#err-msg{
+  color: #C93131;
+  font-size: 18px;
+  font-weight: medium;
+  margin-right: 2vw;
+  overflow: visible;
+}
+
+#submit-btn{
+  width: 9vw;
+  height: 6vh;
+  position: absolute;
+  right: 0;
+  border-radius: 10px;
+  background-color: #54565B;
+  border-width: 0;
+  color: white;
+  font-size: 18px;
+}
+
+#submit-btn:hover{
+  cursor: pointer;
 }
