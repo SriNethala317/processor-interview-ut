@@ -10,50 +10,127 @@ ENV_FILE = find_dotenv()
 if ENV_FILE:
     load_dotenv(ENV_FILE)
 
+# SQL statement to create tables with constraints
+initial_setup_of_tables = """
+DROP TABLE IF EXISTS invalid_transactions;
+DROP TABLE IF EXISTS card_accounts;
+DROP TABLE IF EXISTS transaction_table;
+DROP TABLE IF EXISTS accounts;
 
-conn = psycopg2.connect(database = "signaPay", user = "postgres", host = 'localhost', password = "welcome123", port = 5432)
-
-# SQL statement to create ENUM type if it doesn't exist
-create_enum_sql = """
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'transaction_types') THEN
         CREATE TYPE transaction_types AS ENUM('transfer', 'credit', 'debit');
     END IF;
 END $$;
-"""
 
-# SQL statement to create tables with constraints
-create_tables_sql = """
-CREATE TABLE IF NOT EXISTS transaction_table (
+CREATE TABLE IF NOT EXISTS accounts (
+    account_id SERIAL PRIMARY KEY,
+    account_name TEXT UNIQUE NOT NULL  -- Ensure account_name is unique
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
     transaction_id SERIAL PRIMARY KEY,
-    account_name TEXT NOT NULL,
-    card_number VARCHAR(16) NOT NULL CHECK (LENGTH(card_number) = 16),
-    transaction_amount DECIMAL(10, 2) NOT NULL,
-    transaction_type transaction_types NOT NULL,
+    account_id INT REFERENCES accounts(account_id) ON DELETE CASCADE,
+    card_number VARCHAR(16), --NOT NULL CHECK (LENGTH(card_number) = 16)
+    transaction_amount DECIMAL(10, 2), --NOT NULL
+    transaction_type transaction_types-- NOT NULL
     description TEXT, 
-    target_card VARCHAR(16) CHECK (transaction_type != 'transfer' OR LENGTH(target_card) = 16),
-    transaction_file TEXT NOT NULL
+    target_card VARCHAR(16),
+    transaction_file TEXT NOT NULL,
 );
 
 CREATE TABLE IF NOT EXISTS cards (
     card_number VARCHAR(16) PRIMARY KEY,
     card_balance DECIMAL(10, 2) DEFAULT 0,
-    CONSTRAINT card_length CHECK (LENGTH(card_number) = 16)
 );
 
 CREATE TABLE IF NOT EXISTS card_accounts (
     card_number VARCHAR(16) REFERENCES cards(card_number) ON DELETE CASCADE,
     account_id INT REFERENCES accounts(account_id) ON DELETE CASCADE,
-    PRIMARY KEY (card_number, account_id)
+    PRIMARY KEY (card_number, account_id)  -- Composite primary key for uniqueness
 );
 
-CREATE TABLE IF NOT EXISTS invalid_table (
+CREATE TABLE IF NOT EXISTS invalid_transactions (
     invalid_id SERIAL PRIMARY KEY,
-    transaction_id INT REFERENCES transaction_table(transaction_id) ON DELETE CASCADE,
+    transaction_id INT REFERENCES transactions(transaction_id) ON DELETE CASCADE,
     invalid_reason TEXT NOT NULL
 );
+
+CREATE OR REPLACE FUNCTION delete_account_if_no_transactions()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if there are no transactions remaining for this account
+    IF NOT EXISTS (SELECT 1 FROM transactions WHERE account_id = OLD.account_id) THEN
+        DELETE FROM accounts WHERE account_id = OLD.account_id;
+    END IF;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER after_transaction_delete
+AFTER DELETE ON transactions
+FOR EACH ROW EXECUTE FUNCTION delete_account_if_no_transactions();
+
 """
+
+tables_check = """
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public';
+
+"""
+with psycopg2.connect(env.get('DATABASE_URI')) as conn:
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT version();")
+        db_version = cursor.fetchone()
+        print(f"PostgreSQL Database Version: {db_version}")
+
+        def initial_setup():
+            cursor.execute(initial_setup_of_tables)
+            cursor.execute(tables_check)
+
+            print(cursor.fetchall())
+            conn.commit()
+        
+        def account_exists(account_name):
+            cursor.execute("SELECT account_id FROM accounts WHERE account_name = %s", (account_name,))
+            return cursor.fetchone()
+        
+        def create_account(account_name):
+            cursor.execute("""INSERT INTO accounts (account_name)
+                           VALUES (%s) RETURNING account_id""", (account_name,))
+            conn.commit()
+            return cursor.fetchone()
+
+        def card_exists(card_number):
+            cursor.execute("SELECT card_number FROM cards WHERE card_number = %s", (card_number,))
+            return cursor.fetchone()
+
+        def create_card(card_number):
+            cursor.execute("""INSERT INTO cards (card_number)
+                           VALUES (%s) RETURNING card_number""", (card_number,))
+            conn.commit()
+            return cursor.fetchone()
+        
+        def card_and_account_link_exists(account_id, card_number):
+            cursor.execute("SELECT card_number FROM cards WHERE card_number = %s AND account_id = %s", (card_number, account_id))
+            return cursor.fetchone()
+
+        def link_card_and_account(card_number, account_id):
+            cursor.execute("""INSERT INTO card_accounts (card_number, account_id)
+                           VALUES (%s, %s) RETURNING card_number""", (card_number, account_id))
+            conn.commit()
+            return cursor.fetchone()
+
+
+    except Exception as error:
+        print(f'Connect failed. Error: {error}')
+        conn.rollback()
+
+cursor.close()
+conn.close()
 
 
 

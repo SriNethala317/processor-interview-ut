@@ -1,0 +1,117 @@
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    margin: 0 0;
+
+}
+
+.body-background {
+    background-color: #ffff;
+    background-size: cover;
+}
+
+.body-elements {
+    display: flex;
+    flex-direction: row;
+}
+
+
+#sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #54565B;
+    width: 18%;
+    height: 100%;
+}
+
+.signa-logo {
+    width: 13vw;
+    height: 13vw;
+    margin: 5vh 0 7vh;
+}
+
+.last-sidebar-tab {
+    border-bottom: 2px solid #000;
+}
+
+.sidebar-tab {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 2px solid #000;
+    color: #ffff;
+    font-size: 24px;
+    font-weight: medium;
+    width: 100%;
+    box-sizing: border-box;
+    height: 9%;
+}
+
+.sidebar-tab:hover {
+    cursor: pointer;
+}
+
+.content-selection {
+    display: none;
+}
+
+.main-content {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+#upload-transactions-menu {
+    box-sizing: border-box;
+    width: 25%;
+    height: 100%;
+    border-right: 2px solid #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.upload-transactions-title{
+    font-weight: 100;
+    font-size: 30px;
+}
+
+#upload-file-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4vh;
+    border-bottom: 1.5px solid #000;
+}
+
+#upload-file{
+    border: 1.5px solid #000;
+    border-radius: 20px;
+    width: 12vw;
+    height: 12vw;
+    margin: 4vh 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.plus{
+    font-size: 10rem;
+    color: #00A0DD;
+    font-weight: 800;
+}
+
+#upload-file:hover{
+    cursor: pointer;
+}
+
+.hidden{
+    display: none;
+}

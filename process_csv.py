@@ -1,11 +1,12 @@
 import pandas as pd
 import io
+from db import *
 
 # def process_file(file):
 #     file_stream = io.StringIO(file.stream.read().decode("UTF8"))
 
 df = pd.read_csv("test.csv", columns=['account_name', 'card_number', 'transaction_amount', 'transaction_type', 'description', 'target_card'])
-
+i = 0
 for row in df.itertuples(index=False):
     account_name = row.account_name
     card_number = row.account_number
@@ -13,13 +14,13 @@ for row in df.itertuples(index=False):
     transaction_type = row.transaction_type
     description = row.description
     target_card = row.target_card
-
+    account_id = -1
     err_msg = ""
 
     # Check if account name is NaN
     if pd.isna(account_name):
         err_msg += "Account name shouldn't be NaN. "
-
+        
     # Check if card number is a 16-digit number and not NaN
     if pd.isna(card_number) or len(str(card_number)) != 16 or not str(card_number).isdigit():
         err_msg += "Card number should be a 16-digit number and not NaN. "
@@ -49,8 +50,25 @@ for row in df.itertuples(index=False):
 
     #TODO: enter into transactions table- creating cards for card_number and also target_card
 
+    if i > 1:
+        break
+    i+= 1
     # Print or log the error message if there are any issues
     if err_msg:
         #TODO: enter into invalid db
         print(f"Row {row.Index} error: {err_msg.strip()}")
-    
+    else:
+
+        account_id = account_exists(account_name) 
+        if not account_id:
+            account_id = create_account(account_name)
+        
+        print(account_id)
+        
+        if not card_exists(card_number):
+            card_number = create_card(card_number)
+
+        if not card_and_account_link_exists(card_number, account_id):
+            link_card_and_account(card_number, account_id)
+        
+        

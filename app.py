@@ -13,6 +13,10 @@ if ENV_FILE:
 app = Flask(__name__)   
 app.secret_key = env.get("APP_SECRET_KEY")
 
+app.config['UPLOAD_FOLDER'] = 'uploads'
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
 @app.route('/')
 def home():
     return render_template("/index.html")
@@ -41,4 +45,17 @@ def logged_in():
         return jsonify({'success': False, 'msg': 'Invalid Username and/or Password'})
     else:
         return jsonify({'success': True})
+
+@app.route('/upload-data', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({"message": "No file part in the request"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"message": "No selected file"}), 400
+
+    # Save the file
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+    return jsonify({"message": "File successfully uploaded"}), 200
 

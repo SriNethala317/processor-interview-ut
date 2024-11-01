@@ -14,8 +14,40 @@
   <link rel="stylesheet" href="../static/styles/dashboard.css">
 </head>
 
-<body>
-  <h1>Hello World</h1>
+<body class="body-background body-elements">
+  <div id="sidebar">
+    <img class="signa-logo" src="/images/login-logo.png" alt="SignaPay Logo">
+    <div class="first-tab sidebar-tab" data-id="bulk-transaction">Bulk Transactions</div>
+    <div class="sidebar-tab" data-id="invalid-transaction">Invalid Transactions</div>
+    <div class="sidebar-tab" data-id="individual-information">Individual Information</div>
+    <div class="last-sidebar-tab sidebar-tab" data-id="collections">Collections</div>
+  </div>
+  <div class="main-content">
+    <div id="bulk-transaction" class="content-selection">
+      <div id="upload-transactions-menu">
+        <div id="upload-file-container">
+          <span class="upload-transactions-title">Upload Transactions</span>
+          <div id="upload-file"><span class="plus">+</span></div>
+          <input type="file" id="file-input" class="hidden">
+        </div>
+      </div>
+    </div>
+
+    <div id="invalid-transaction" class="content-selection">
+      <span>invalid transaction</span>
+    </div>
+
+    <div id="individual-information" class="content-selection">
+      <span>individual information</span>
+    </div>
+
+    <div id="collections" class="content-selection">
+      <span>collections</span>
+    </div>
+  </div>
+
+
+
 
   <script src="../static/scripts/dashboard.js" async defer></script>
 </body>
