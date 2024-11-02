@@ -134,12 +134,28 @@ with psycopg2.connect(env.get('DATABASE_URI')) as conn:
         def display_cards():
             cursor.execute("""SELECT * FROM cards""")
             return cursor.fetchall()
+
+        def display_transactions():
+            cursor.execute("SELECT * FROM transactions")
+            return cursor.fetchall()
         
         def add_to_transactions(account_id, card_number, transaction_amount, transaction_type, description, transaction_file, target_card=None):
             cursor.execute("""INSERT INTO transactions (account_id, card_number, transaction_amount, transaction_type, description, transaction_file, target_card)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s)""", (account_id, card_number, transaction_amount, transaction_type, description, transaction_file, target_card))
+                           VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING transaction_id""", (account_id, card_number, transaction_amount, transaction_type, description, transaction_file, target_card))
             conn.commit()
-            
+            return cursor.fetchone()
+
+        def update_card_balance(card_number, transaction_amount):
+            cursor.execute("""UPDATE cards
+                           SET card_balance = card_balance + %s
+                           WHERE card_number = %s""", (transaction_amount, card_number))
+            conn.commit()
+        
+        def display_transfers(transaction_type):
+            cursor.execute("""SELECT * FROM transactions 
+                           WHERE transaction_type = %s""", (transaction_type,))
+            return cursor.fetchall()
+
     except Exception as error:
         print(f'Connect failed. Error: {error}')
         conn.rollback()
